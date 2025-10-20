@@ -156,3 +156,7 @@ Created for interactive design learning and fun!
 运行程序后，每次点击鼠标都会生成一个独特的奇幻角色头像。尝试点击多次，发现各种有趣的组合！
 
 Try clicking multiple times to discover various interesting combinations of fantasy characters!
+
+![Avatar Showcase](avatar_showcase.png)
+
+*Examples of randomly generated avatars showing different races, expressions, headwear, and clothing*
