@@ -67,6 +67,10 @@ An interactive fantasy-style pixel avatar generator written in Pygame. Each mous
    ```bash
    pip install pygame
    ```
+   或使用 requirements.txt (or use requirements.txt):
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ### 运行步骤 (Running the Program)
 1. 打开终端/命令行 (Open terminal/command line)
