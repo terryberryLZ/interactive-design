@@ -1,37 +1,54 @@
 # 奇幻像素头像生成器 (Fantasy Pixel Avatar Generator)
 
-一个使用 Processing Python Mode 编写的交互式奇幻风格像素头像生成器。每次点击鼠标都会生成一个随机组合的幽默、可爱、搞怪的大头照式头像。
+一个交互式奇幻风格像素头像生成器，可生成随机组合的幽默、可爱、搞怪的大头照式头像。支持 Processing Python Mode 和 Pygame 两种版本。
 
-An interactive fantasy-style pixel avatar generator written in Processing Python Mode. Each mouse click generates a randomly combined humorous, cute, and quirky portrait-style avatar.
+An interactive fantasy-style pixel avatar generator that creates randomly combined humorous, cute, and quirky portrait-style avatars. Available in both Processing Python Mode and Pygame versions.
+
+## 🎮 Two Versions Available
+
+### Version 1: Processing Python Mode (Original)
+- File: `fantasy_avatar_generator.pyde`
+- Requires: Processing with Python Mode installed
+- Best for: Learning and creative coding
+
+### Version 2: Standalone Pygame (New)
+- File: `fantasy_avatar_generator.py`
+- Requires: Python 3.8+ and Pygame
+- Features: Command-line arguments, seed support, save function
+- Can be packaged as Windows .exe
 
 ## 功能特点 (Features)
 
 ### 用户交互 (User Interaction)
-- 鼠标点击触发头像生成
-- 每次点击都会随机组合头像元素并重新绘制
+- **Mouse Click / 鼠标点击**: Generate new avatar / 生成新头像
+- **Press R**: Generate new avatar / 生成新头像
+- **Press S** (Pygame only): Save avatar as PNG / 保存头像为PNG
+- **Press ESC** (Pygame only): Exit program / 退出程序
+- **--seed parameter** (Pygame only): Reproducible generation / 可复现生成
 
 ### 头像元素 (Avatar Elements)
 
 #### 基础属性 (Basic Attributes)
 - **性别 (Gender)**: 男 / 女 (Male / Female)
-- **种族 (Race)**: 兽人、精灵、矮人、地精 (Orc, Elf, Dwarf, Goblin)
-- **皮肤颜色 (Skin Color)**: 多种奇幻肤色 (Various fantasy skin tones)
+- **种族 (Race)**: 人类、兽人、精灵、矮人、地精 (Human, Orc, Elf, Dwarf, Goblin)
+- **皮肤颜色 (Skin Color)**: 8种奇幻肤色 (8 fantasy skin tones)
   - 绿色 (兽人/地精)
-  - 浅色 (精灵)
-  - 棕褐色 (矮人)
-  - 淡绿色、淡蓝色、桃色等
+  - 浅色 (精灵/人类)
+  - 棕褐色、桃色、淡黄色等 (人类)
+  - 淡绿色、淡蓝色等
 
 #### 表情 (Expressions)
-- 微笑 (Smile) - 快乐的笑容
-- 生气 (Angry) - 愤怒的眉毛和皱眉
-- 滑稽 (Silly) - 吐舌头和眨眼
-- 呆萌 (Cute) - 圆圆的嘴和脸红
+- 英俊 (Handsome) - 自信的笑容配挑眉
+- 严肃 (Serious) - 直线嘴巴配皱眉
+- 可爱 (Cute) - 圆圆的嘴和腮红
+- 搞怪 (Goofy) - 吐舌头配眨眼和挑眉
 
 #### 头饰 (Headwear)
 - 角盔 (Horn Helmet) - 带角的金属头盔
 - 花冠 (Flower Crown) - 彩色花朵和绿叶
 - 巫师帽 (Wizard Hat) - 高高的尖顶帽配星星装饰
 - 触手帽 (Tentacle Hat) - 章鱼风格的帽子
+- 头巾 (Headband) - 简单头巾配装饰
 - 无 (None)
 
 #### 首饰 (Jewelry)
@@ -39,12 +56,14 @@ An interactive fantasy-style pixel avatar generator written in Processing Python
 - 骷髅吊坠 (Skull Pendant)
 - 宝石项圈 (Gem Collar)
 - 叶子项链 (Leaf Necklace)
+- 符文吊坠 (Rune Pendant) - 发光魔法符文
 - 无 (None)
 
 **耳饰 (Earrings)**:
 - 圆环 (Hoop)
 - 羽毛 (Feather)
 - 骨头 (Bone)
+- 耳钉 (Stud) - 金色小耳钉
 - 无 (None)
 
 #### 衣服 (Clothing)
@@ -52,28 +71,72 @@ An interactive fantasy-style pixel avatar generator written in Processing Python
 - 盔甲 (Armor) - 板甲装备
 - 束腰外衣 (Tunic) - 简单的束腰外衣
 - 斗篷 (Cloak) - 神秘的斗篷配金色扣环
+- 连帽衫 (Hoodie) - 现代风格连帽衫
+
+#### 背景 (Backgrounds)
+- 纯色 (Solid Colors) - 紫色、蓝色、粉色
+- 渐变 (Gradients) - 日落渐变、海洋渐变
+- 图案 (Patterns) - 星星图案、圆点图案
 
 ### 绘图风格 (Drawing Style)
 - 像素风格 (使用 `rect()` 模拟像素块)
-- 画面尺寸: 320x320 像素
-- 使用简洁色块，无渐变
+- 画面尺寸: 512x512 像素 (从 128x128 逻辑画布 4倍放大)
+- 使用简洁色块，部分背景支持渐变
 - 每个元素用函数模块化绘制，便于组合和扩展
 
 ## 如何运行 (How to Run)
 
-### 前置要求 (Prerequisites)
+### Option 1: Processing Python Mode (Original Version)
+
+#### 前置要求 (Prerequisites)
 1. 下载并安装 [Processing](https://processing.org/download)
 2. 在 Processing 中切换到 Python Mode:
    - 点击右上角的 "Java" 按钮
    - 选择 "Add Mode..."
    - 安装 "Python Mode for Processing 3"
 
-### 运行步骤 (Running the Program)
+#### 运行步骤 (Running the Program)
 1. 启动 Processing
 2. 确保已切换到 Python Mode
 3. 打开 `fantasy_avatar_generator.pyde` 文件
 4. 点击运行按钮 (或按 Ctrl+R / Cmd+R)
-5. 在弹出的窗口中点击鼠标任意位置生成新头像
+5. 在弹出的窗口中点击鼠标任意位置或按R键生成新头像
+
+### Option 2: Pygame Standalone (New Version)
+
+#### 安装依赖 (Install Dependencies)
+```bash
+pip install -r requirements.txt
+```
+
+或直接安装:
+```bash
+pip install pygame
+```
+
+#### 运行程序 (Run Program)
+
+基本运行:
+```bash
+python fantasy_avatar_generator.py
+```
+
+使用特定种子 (可复现生成):
+```bash
+python fantasy_avatar_generator.py --seed 12345
+```
+
+#### 按键说明 (Controls)
+- **鼠标点击 / Mouse Click**: 生成新头像 / Generate new avatar
+- **R键 / R Key**: 生成新头像 / Generate new avatar
+- **S键 / S Key**: 保存当前头像为PNG / Save current avatar as PNG
+- **ESC键 / ESC Key**: 退出程序 / Exit program
+
+### Option 3: Windows .exe (No Python Required)
+
+See [BUILD_EXE.md](BUILD_EXE.md) for instructions on building a standalone Windows executable.
+
+Once built, simply double-click `FantasyAvatarGenerator.exe` to run!
 
 ## 代码结构 (Code Structure)
 

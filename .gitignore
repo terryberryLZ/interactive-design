@@ -25,3 +25,11 @@ Thumbs.db
 *.tmp
 *.bak
 *.log
+
+# PyInstaller
+build/
+dist/
+*.spec.swp
+
+# Generated avatars
+avatar_*.png
