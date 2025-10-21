@@ -1,8 +1,8 @@
 # 奇幻像素头像生成器 (Fantasy Pixel Avatar Generator)
 
-一个使用 Processing Python Mode 编写的交互式奇幻风格像素头像生成器。每次点击鼠标都会生成一个随机组合的幽默、可爱、搞怪的大头照式头像。
+一个使用 Pygame 编写的交互式奇幻风格像素头像生成器。每次点击鼠标都会生成一个随机组合的幽默、可爱、搞怪的大头照式头像。
 
-An interactive fantasy-style pixel avatar generator written in Processing Python Mode. Each mouse click generates a randomly combined humorous, cute, and quirky portrait-style avatar.
+An interactive fantasy-style pixel avatar generator written in Pygame. Each mouse click generates a randomly combined humorous, cute, and quirky portrait-style avatar.
 
 ## 功能特点 (Features)
 
@@ -62,41 +62,52 @@ An interactive fantasy-style pixel avatar generator written in Processing Python
 ## 如何运行 (How to Run)
 
 ### 前置要求 (Prerequisites)
-1. 下载并安装 [Processing](https://processing.org/download)
-2. 在 Processing 中切换到 Python Mode:
-   - 点击右上角的 "Java" 按钮
-   - 选择 "Add Mode..."
-   - 安装 "Python Mode for Processing 3"
+1. Python 3.6 或更高版本 (Python 3.6 or higher)
+2. 安装 Pygame:
+   ```bash
+   pip install pygame
+   ```
+   或使用 requirements.txt (or use requirements.txt):
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ### 运行步骤 (Running the Program)
-1. 启动 Processing
-2. 确保已切换到 Python Mode
-3. 打开 `fantasy_avatar_generator.pyde` 文件
-4. 点击运行按钮 (或按 Ctrl+R / Cmd+R)
-5. 在弹出的窗口中点击鼠标任意位置生成新头像
+1. 打开终端/命令行 (Open terminal/command line)
+2. 导航到项目目录 (Navigate to the project directory)
+3. 运行程序:
+   ```bash
+   python3 fantasy_avatar_generator.py
+   ```
+   或 (or)
+   ```bash
+   python fantasy_avatar_generator.py
+   ```
+4. 在弹出的窗口中点击鼠标任意位置生成新头像 (Click anywhere in the window to generate a new avatar)
+5. 关闭程序: 点击窗口的关闭按钮或按 ESC 键 (Close the program: Click the window close button or press ESC)
 
 ## 代码结构 (Code Structure)
 
 ### 主要函数 (Main Functions)
 
-- `setup()` - 初始化程序，设置画布大小
-- `draw()` - 主绘制循环 (静态图像)
-- `mousePressed()` - 鼠标点击事件处理
-- `generateAvatar()` - 生成随机头像并绘制
+- `setup()` - 初始化 Pygame 窗口 (Initialize Pygame window)
+- `generate_avatar()` - 生成随机头像组件 (Generate random avatar components)
+- `draw_avatar()` - 绘制完整头像 (Draw complete avatar)
+- `main()` - 主游戏循环，处理事件 (Main game loop, handle events)
 
 ### 绘制模块 (Drawing Modules)
 
 #### 头部相关 (Head-related)
-- `drawHead(race, skin_col)` - 绘制头部/脸部
-- `drawExpression(expression)` - 绘制面部表情
+- `draw_head(screen, race, skin_col)` - 绘制头部/脸部 (Draw head/face)
+- `draw_expression(screen, expression)` - 绘制面部表情 (Draw facial expression)
 
 #### 配饰相关 (Accessory-related)
-- `drawHeadwear(headwear_type, race)` - 绘制头饰
-- `drawNecklace(necklace_type)` - 绘制项链
-- `drawEarrings(earring_type)` - 绘制耳环
+- `draw_headwear(screen, headwear_type, race)` - 绘制头饰 (Draw headwear)
+- `draw_necklace(screen, necklace_type)` - 绘制项链 (Draw necklace)
+- `draw_earrings(screen, earring_type)` - 绘制耳环 (Draw earrings)
 
 #### 服装相关 (Clothing-related)
-- `drawClothes(clothes_type, skin_col)` - 绘制服装/盔甲
+- `draw_clothes(screen, clothes_type, skin_col)` - 绘制服装/盔甲 (Draw clothes/armor)
 
 ### 全局变量 (Global Variables)
 
@@ -122,15 +133,23 @@ An interactive fantasy-style pixel avatar generator written in Processing Python
 
 ## 技术细节 (Technical Details)
 
-- **语言**: Processing Python Mode
+- **语言**: Python 3 with Pygame
 - **画布尺寸**: 320x320 像素
 - **像素块大小**: 8x8 像素
-- **绘图方法**: 使用 `rect()` 函数绘制像素块
-- **无描边**: 使用 `noStroke()` 实现纯色块效果
+- **绘图方法**: 使用 `pygame.draw.rect()` 函数绘制像素块
+- **事件处理**: 使用 `pygame.MOUSEBUTTONDOWN` 检测鼠标点击
 
 ## 许可证 (License)
 
 本项目采用开源许可，可自由使用和修改。
+
+## Legacy Processing Version
+
+The original Processing Python Mode version is still available as `fantasy_avatar_generator.pyde` for reference. However, the recommended version is the Pygame implementation (`fantasy_avatar_generator.py`) which:
+- Runs natively in Python without Processing dependencies
+- Is easier to distribute and package as a standalone executable
+- More accessible to Python developers
+- Can be integrated into other Python projects easily
 
 ## 作者 (Author)
 
@@ -141,3 +160,7 @@ Created for interactive design learning and fun!
 运行程序后，每次点击鼠标都会生成一个独特的奇幻角色头像。尝试点击多次，发现各种有趣的组合！
 
 Try clicking multiple times to discover various interesting combinations of fantasy characters!
+
+![Avatar Showcase](avatar_showcase.png)
+
+*Examples of randomly generated avatars showing different races, expressions, headwear, and clothing*
