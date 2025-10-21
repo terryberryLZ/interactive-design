@@ -26,7 +26,7 @@ def test_pyde_structure():
     # Test 2: Check for required global variables
     required_globals = [
         'GENDERS', 'RACES', 'SKIN_COLORS', 'EXPRESSIONS',
-        'HEADWEAR', 'NECKLACES', 'EARRINGS', 'CLOTHES', 'PIXEL'
+        'HEADWEAR', 'NECKLACES', 'EARRINGS', 'CLOTHES', 'BACKGROUNDS', 'PIXEL'
     ]
     
     defined_globals = set()
@@ -45,8 +45,8 @@ def test_pyde_structure():
     
     # Test 3: Check for required functions
     required_functions = [
-        'setup', 'draw', 'mousePressed', 'generateAvatar', 'random_choice',
-        'drawHead', 'drawExpression', 'drawHeadwear', 'drawNecklace',
+        'setup', 'draw', 'mousePressed', 'keyPressed', 'generateAvatar', 'random_choice',
+        'drawBackground', 'drawHead', 'drawExpression', 'drawHeadwear', 'drawNecklace',
         'drawEarrings', 'drawClothes'
     ]
     
@@ -67,13 +67,14 @@ def test_pyde_structure():
     
     list_checks = {
         'GENDERS': 2,
-        'RACES': 4,
-        'SKIN_COLORS': 6,
-        'EXPRESSIONS': 4,
-        'HEADWEAR': 5,
-        'NECKLACES': 4,
-        'EARRINGS': 4,
-        'CLOTHES': 4
+        'RACES': 5,  # Added human
+        'SKIN_COLORS': 8,  # Added more human skin tones
+        'EXPRESSIONS': 4,  # Changed to handsome, serious, cute, goofy
+        'HEADWEAR': 6,  # Added headband
+        'NECKLACES': 5,  # Added rune_pendant
+        'EARRINGS': 5,  # Added stud
+        'CLOTHES': 5,  # Added hoodie
+        'BACKGROUNDS': 7  # New category
     }
     
     list_lengths = {}
