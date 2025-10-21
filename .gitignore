@@ -25,3 +25,12 @@ Thumbs.db
 *.tmp
 *.bak
 *.log
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec.bak
+
+# Generated avatars (samples for testing)
+sample_avatar_*.png
+avatar_*.png

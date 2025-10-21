@@ -1,0 +1,89 @@
+{
+  "description": "Color palette for pixel-art avatar generator, inspired by reference images",
+  "version": "1.0",
+  "license": "MIT - Free to use and modify",
+  "palettes": {
+    "backgrounds": {
+      "cyan_blue": [173, 216, 230],
+      "light_blue": [135, 206, 235],
+      "mint": [152, 251, 152],
+      "lavender": [230, 230, 250],
+      "peach": [255, 218, 185]
+    },
+    "skin_tones": {
+      "light": [255, 224, 189],
+      "medium": [236, 188, 155],
+      "tan": [198, 134, 66],
+      "dark": [141, 85, 36],
+      "peach": [255, 207, 159]
+    },
+    "skin_shadows": {
+      "light": [232, 190, 150],
+      "medium": [205, 155, 120],
+      "tan": [165, 105, 48],
+      "dark": [110, 65, 25],
+      "peach": [225, 175, 130]
+    },
+    "skin_highlights": {
+      "light": [255, 240, 220],
+      "medium": [255, 210, 180],
+      "tan": [220, 160, 95],
+      "dark": [170, 110, 55],
+      "peach": [255, 230, 190]
+    },
+    "hair_colors": {
+      "brown": [101, 67, 33],
+      "dark_brown": [59, 48, 36],
+      "black": [28, 28, 28],
+      "blonde": [230, 190, 138],
+      "red": [165, 42, 42],
+      "auburn": [145, 85, 61]
+    },
+    "hair_shadows": {
+      "brown": [70, 45, 20],
+      "dark_brown": [40, 35, 25],
+      "black": [15, 15, 15],
+      "blonde": [190, 150, 100],
+      "red": [120, 30, 30],
+      "auburn": [100, 55, 35]
+    },
+    "hair_highlights": {
+      "brown": [130, 90, 50],
+      "dark_brown": [80, 65, 50],
+      "black": [45, 45, 45],
+      "blonde": [255, 220, 170],
+      "red": [200, 60, 60],
+      "auburn": [180, 110, 80]
+    },
+    "eyes": {
+      "white": [255, 255, 255],
+      "black": [28, 28, 28],
+      "brown": [101, 67, 33],
+      "blue": [70, 130, 180],
+      "green": [107, 142, 35],
+      "gray": [128, 128, 128],
+      "highlight": [255, 255, 255]
+    },
+    "clothing": {
+      "purple_light": [186, 164, 212],
+      "purple_dark": [123, 104, 238],
+      "green_light": [144, 238, 144],
+      "green_dark": [34, 139, 34],
+      "blue_light": [135, 206, 250],
+      "blue_dark": [25, 25, 112],
+      "red": [220, 20, 60],
+      "white": [255, 255, 255],
+      "gray": [169, 169, 169],
+      "black": [28, 28, 28],
+      "yellow": [255, 215, 0],
+      "orange": [255, 140, 0]
+    },
+    "accents": {
+      "outline_black": [0, 0, 0],
+      "nose_shadow": [210, 145, 110],
+      "blush": [255, 182, 193],
+      "mouth_dark": [139, 69, 19],
+      "mouth_light": [205, 92, 92]
+    }
+  }
+}
