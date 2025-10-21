@@ -34,3 +34,5 @@ dist/
 # Generated avatars
 avatar_*.png
 test_avatar_*.png
+avatar_gallery/
+themed_gallery/

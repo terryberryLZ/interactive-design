@@ -138,6 +138,26 @@ See [BUILD_EXE.md](BUILD_EXE.md) for instructions on building a standalone Windo
 
 Once built, simply double-click `FantasyAvatarGenerator.exe` to run!
 
+### Demos & Examples
+
+**Batch Generation Demo**:
+```bash
+# Generate a themed gallery
+python demo_batch_generate.py
+
+# Generate custom number of avatars
+python demo_batch_generate.py 20
+```
+
+**Testing**:
+```bash
+# Run structure tests
+python test_structure.py
+
+# Run pygame generation tests
+python test_pygame_generation.py
+```
+
 ## 代码结构 (Code Structure)
 
 ### 主要函数 (Main Functions)
