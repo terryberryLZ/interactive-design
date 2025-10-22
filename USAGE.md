@@ -2,6 +2,10 @@
 
 ## 快速开始 (Quick Start)
 
+本项目提供两个版本，可根据需要选择：
+
+## Version 1: Processing Python Mode
+
 ### 1. 安装 Processing (Install Processing)
 
 访问 [Processing 官网](https://processing.org/download) 下载并安装适合您操作系统的版本。
@@ -22,13 +26,80 @@
 3. 点击运行按钮 (播放图标) 或按快捷键:
    - Windows/Linux: Ctrl + R
    - macOS: Cmd + R
-4. 程序窗口将打开，显示一个 320x320 的画布
+4. 程序窗口将打开，显示一个 512x512 的画布
 
 ### 4. 生成头像 (Generate Avatars)
 
 - **点击鼠标**: 在窗口内任意位置点击鼠标，即可生成新的随机头像
+- **按R键**: 按R键也可以生成新头像
 - **无限生成**: 可以点击任意多次，每次都会生成不同的组合
 - **关闭程序**: 点击窗口的关闭按钮或按 ESC 键
+
+## Version 2: Pygame Standalone
+
+### 1. 安装 Python 和 Pygame
+
+确保已安装 Python 3.8 或更高版本，然后安装 pygame:
+
+```bash
+pip install pygame
+```
+
+或使用 requirements.txt:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. 运行程序
+
+**基本运行**:
+```bash
+python fantasy_avatar_generator.py
+```
+
+**使用种子值（可复现生成）**:
+```bash
+python fantasy_avatar_generator.py --seed 12345
+```
+
+使用相同的种子值会生成相同的头像序列，适合：
+- 展示特定的头像组合
+- 调试和测试
+- 创建可复现的演示
+
+### 3. 交互控制
+
+- **鼠标点击**: 生成新头像
+- **R键**: 生成新头像
+- **S键**: 保存当前头像为PNG文件（保存在当前目录）
+- **ESC键**: 退出程序
+
+### 4. 查看帮助
+
+```bash
+python fantasy_avatar_generator.py --help
+```
+
+## Version 3: Windows .exe (无需安装Python)
+
+### 构建可执行文件
+
+参见 [BUILD_EXE.md](BUILD_EXE.md) 获取详细的构建说明。
+
+简要步骤：
+1. 安装 PyInstaller: `pip install pyinstaller`
+2. 运行构建命令: `pyinstaller fantasy_avatar_generator.spec`
+3. 在 `dist/` 文件夹中找到 `FantasyAvatarGenerator.exe`
+
+### 运行可执行文件
+
+双击 `FantasyAvatarGenerator.exe` 即可运行。
+
+或在命令行中使用种子值:
+```bash
+FantasyAvatarGenerator.exe --seed 12345
+```
 
 ## 程序说明 (Program Description)
 
@@ -37,6 +108,7 @@
 程序会随机选择以下元素组合成独特的头像：
 
 1. **种族特征** (Race Features)
+   - 人类: 平衡圆润的头部，正常耳朵
    - 兽人: 宽大的方形头部，带有獠牙
    - 精灵: 优雅的椭圆形头部，尖耳朵
    - 矮人: 结实的圆形头部，带有胡须
@@ -44,29 +116,35 @@
 
 2. **皮肤颜色** (Skin Colors)
    - 绿色系 (适合兽人/地精)
-   - 浅色系 (适合精灵)
-   - 棕褐色系 (适合矮人)
-   - 其他奇幻色彩
+   - 浅色系 (适合精灵/人类)
+   - 棕褐色、桃色、淡黄色系 (适合人类)
+   - 其他奇幻色彩 (淡蓝、淡绿等)
 
 3. **面部表情** (Facial Expressions)
-   - 微笑: 弯曲的笑容
-   - 生气: 皱眉和生气的眉毛
-   - 滑稽: 吐舌头，一只眼睛眨眼
-   - 呆萌: 圆嘴巴和腮红
+   - 英俊: 自信的笑容配挑眉
+   - 严肃: 直线嘴巴配皱眉
+   - 可爱: 圆嘴巴和腮红
+   - 搞怪: 吐舌头配眨眼和挑眉
 
 4. **装饰品** (Accessories)
-   - 头饰: 角盔、花冠、巫师帽、触手帽
-   - 项链: 骷髅吊坠、宝石项圈、叶子项链
-   - 耳环: 圆环、羽毛、骨头
+   - 头饰: 角盔、花冠、巫师帽、触手帽、头巾
+   - 项链: 骷髅吊坠、宝石项圈、叶子项链、符文吊坠
+   - 耳环: 圆环、羽毛、骨头、耳钉
 
 5. **服装** (Clothing)
-   - 长袍、盔甲、束腰外衣、斗篷
+   - 长袍、盔甲、束腰外衣、斗篷、连帽衫
+
+6. **背景** (Backgrounds)
+   - 纯色: 紫色、蓝色、粉色
+   - 渐变: 日落渐变、海洋渐变
+   - 图案: 星星图案、圆点图案
 
 ### 像素艺术风格 (Pixel Art Style)
 
-- 使用 8x8 像素的方块构建图像
-- 纯色填充，无渐变效果
+- 使用 4x4 像素的方块构建图像
+- 主要使用纯色填充，背景支持渐变效果
 - 复古游戏风格的视觉效果
+- 输出分辨率: 512x512 像素 (从 128x128 逻辑画布放大)
 
 ## 故障排除 (Troubleshooting)
 
