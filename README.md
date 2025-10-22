@@ -4,18 +4,37 @@
 
 An interactive fantasy-style pixel avatar generator that creates randomly combined humorous, cute, and quirky portrait-style avatars. Available in both Processing Python Mode and Pygame versions.
 
-## 🎮 Two Versions Available
+## ✨ NEW: High Quality Version Available!
+
+**现在提供高质量奇幻风格渲染版本！** 使用 SVG 矢量图形技术，生成更精致、更具细节的奇幻头像。
+
+- 📁 文件: `fantasy_avatar_hq.py` + `fantasy_render.py`
+- 🎨 特点: 平滑曲线、丰富细节、光影效果、渐变背景
+- 📖 详细说明: 查看 [HQ_VERSION_GUIDE.md](HQ_VERSION_GUIDE.md)
+- 🚀 快速开始:
+  ```powershell
+  pip install -r requirements.txt
+  python fantasy_avatar_hq.py
+  ```
+
+## 🎮 Three Versions Available
 
 ### Version 1: Processing Python Mode (Original)
 - File: `fantasy_avatar_generator.pyde`
 - Requires: Processing with Python Mode installed
 - Best for: Learning and creative coding
 
-### Version 2: Standalone Pygame (New)
+### Version 2: Standalone Pygame (Pixel Style)
 - File: `fantasy_avatar_generator.py`
 - Requires: Python 3.8+ and Pygame
 - Features: Command-line arguments, seed support, save function
 - Can be packaged as Windows .exe
+
+### Version 3: High Quality (NEW) ⭐
+- Files: `fantasy_avatar_hq.py` + `fantasy_render.py`
+- Requires: Python 3.8+, Pygame, cairosvg, Pillow
+- Features: SVG-based rendering, smooth graphics, rich details
+- Best for: Modern fantasy avatars with professional quality
 
 ## 功能特点 (Features)
 
@@ -137,26 +156,6 @@ python fantasy_avatar_generator.py --seed 12345
 See [BUILD_EXE.md](BUILD_EXE.md) for instructions on building a standalone Windows executable.
 
 Once built, simply double-click `FantasyAvatarGenerator.exe` to run!
-
-### Demos & Examples
-
-**Batch Generation Demo**:
-```bash
-# Generate a themed gallery
-python demo_batch_generate.py
-
-# Generate custom number of avatars
-python demo_batch_generate.py 20
-```
-
-**Testing**:
-```bash
-# Run structure tests
-python test_structure.py
-
-# Run pygame generation tests
-python test_pygame_generation.py
-```
 
 ## 代码结构 (Code Structure)
 
