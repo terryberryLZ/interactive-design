@@ -1,472 +1,397 @@
 #!/usr/bin/env python3
 """
-Fantasy Pixel Avatar Generator - Standalone pygame version
+Fantasy Pixel Avatar Generator - Rewritten with proper alignment
 Click anywhere or press R to generate a new random avatar
-Supports --seed parameter for reproducible generation
-Can be packaged as a Windows .exe with PyInstaller
+Press S to save the current avatar
 """
 
 import pygame
 import random
 import sys
-import argparse
-
-# Global variables for avatar components
-current_avatar = {}
-random_seed = None
-
-# Avatar component options
-GENDERS = ["male", "female"]
-RACES = ["human", "orc", "elf", "dwarf", "goblin"]
-SKIN_COLORS = [
-    (120, 180, 120),  # Green (orc/goblin)
-    (255, 220, 177),  # Light (elf/human)
-    (210, 140, 100),  # Tan (dwarf/human)
-    (180, 255, 180),  # Light green
-    (200, 200, 240),  # Pale blue
-    (255, 200, 150),  # Peach (human)
-    (245, 210, 180),  # Light tan (human)
-    (160, 120, 90),   # Dark tan (human)
-]
-EXPRESSIONS = ["handsome", "serious", "cute", "goofy"]
-HEADWEAR = ["horn_helmet", "flower_crown", "wizard_hat", "tentacle_hat", "headband", "none"]
-NECKLACES = ["skull_pendant", "gem_collar", "leaf_necklace", "rune_pendant", "none"]
-EARRINGS = ["hoop", "feather", "bone", "stud", "none"]
-CLOTHES = ["robe", "armor", "tunic", "cloak", "hoodie"]
-BACKGROUNDS = ["solid_purple", "solid_blue", "solid_pink", "gradient_sunset", "gradient_ocean", "pattern_stars", "pattern_dots"]
-
-# Pixel size for drawing (4 pixels = 1 logical pixel, for 512x512 output from 128x128 logical)
-PIXEL = 4
+from datetime import datetime
+from pathlib import Path
 
 # Screen dimensions
 SCREEN_WIDTH = 512
 SCREEN_HEIGHT = 512
+PIXEL_SIZE = 4  # Scale factor for pixel art
+
+# Canvas grid (logical pixels)
+GRID_WIDTH = SCREEN_WIDTH // PIXEL_SIZE  # 128
+GRID_HEIGHT = SCREEN_HEIGHT // PIXEL_SIZE  # 128
+
+# Avatar anchor points (in grid coordinates)
+CENTER_X = GRID_WIDTH // 2  # 64
+CENTER_Y = GRID_HEIGHT // 2  # 64
+
+HEAD_Y = CENTER_Y - 8  # Head starts above center
+BODY_Y = CENTER_Y + 16  # Body starts below head
+NECK_Y = CENTER_Y + 8  # Neck position
 
 
-def random_choice(lst):
-    """Helper function to pick random item from list"""
-    return random.choice(lst)
-
-
-def lerp(a, b, t):
-    """Linear interpolation between a and b"""
-    return a + (b - a) * t
-
-
-def draw_rect(surface, color, x, y, w=PIXEL, h=PIXEL):
-    """Draw a rectangle on the surface"""
-    pygame.draw.rect(surface, color, (x, y, w, h))
-
-
-def draw_background(surface, bg_type):
-    """Draw background"""
-    if bg_type == "solid_purple":
-        surface.fill((180, 160, 200))
-    elif bg_type == "solid_blue":
-        surface.fill((160, 180, 210))
-    elif bg_type == "solid_pink":
-        surface.fill((240, 200, 220))
-    elif bg_type == "gradient_sunset":
-        # Orange to purple gradient
-        for i in range(128):
-            t = float(i) / 128
-            r = int(lerp(255, 150, t))
-            g = int(lerp(180, 100, t))
-            b = int(lerp(100, 180, t))
-            for j in range(128):
-                draw_rect(surface, (r, g, b), j * PIXEL, i * PIXEL)
-    elif bg_type == "gradient_ocean":
-        # Light blue to dark blue gradient
-        for i in range(128):
-            t = float(i) / 128
-            r = int(lerp(200, 60, t))
-            g = int(lerp(220, 100, t))
-            b = int(lerp(255, 180, t))
-            for j in range(128):
-                draw_rect(surface, (r, g, b), j * PIXEL, i * PIXEL)
-    elif bg_type == "pattern_stars":
-        # Dark background with stars
-        surface.fill((40, 40, 70))
-        for i in range(20):
-            x = random.randint(0, 127) * PIXEL
-            y = random.randint(0, 127) * PIXEL
-            draw_rect(surface, (255, 255, 200), x, y)
-    elif bg_type == "pattern_dots":
-        # Light background with dots
-        surface.fill((230, 230, 250))
-        for i in range(0, 128, 8):
-            for j in range(0, 128, 8):
-                if (i + j) % 16 == 0:
-                    draw_rect(surface, (200, 200, 230), i * PIXEL, j * PIXEL)
-
-
-def draw_head(surface, race, skin_col):
-    """Draw the head/face based on race"""
-    x_center = 256
-    y_center = 224
+class AvatarGenerator:
+    """Main avatar generator class"""
     
-    if race == "human":
-        # Balanced, round head
-        for i in range(7, 13):
-            for j in range(4, 12):
-                draw_rect(surface, skin_col, x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Normal ears
-        draw_rect(surface, skin_col, x_center - 64, y_center + 4, PIXEL * 2, PIXEL * 3)
-        draw_rect(surface, skin_col, x_center + 56, y_center + 4, PIXEL * 2, PIXEL * 3)
-    
-    elif race == "orc":
-        # Broad, square head
-        for i in range(6, 14):
-            for j in range(3, 13):
-                draw_rect(surface, skin_col, x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Tusks
-        draw_rect(surface, (255, 255, 220), x_center - 40, y_center + 20, PIXEL * 2, PIXEL * 3)
-        draw_rect(surface, (255, 255, 220), x_center + 32, y_center + 20, PIXEL * 2, PIXEL * 3)
+    def __init__(self):
+        # Component options
+        self.skin_colors = [
+            (255, 220, 177),  # Peach
+            (245, 210, 180),  # Light tan
+            (210, 140, 100),  # Tan
+            (160, 120, 90),   # Dark tan
+            (120, 180, 120),  # Green (orc)
+            (200, 200, 240),  # Pale blue (elf)
+        ]
         
-    elif race == "elf":
-        # Elegant, oval head
-        for i in range(7, 13):
-            for j in range(4, 12):
-                draw_rect(surface, skin_col, x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Pointed ears
-        draw_rect(surface, skin_col, x_center - 72, y_center, PIXEL * 2, PIXEL * 2)
-        draw_rect(surface, skin_col, x_center - 88, y_center - 8, PIXEL * 2, PIXEL * 2)
-        draw_rect(surface, skin_col, x_center + 64, y_center, PIXEL * 2, PIXEL * 2)
-        draw_rect(surface, skin_col, x_center + 80, y_center - 8, PIXEL * 2, PIXEL * 2)
+        self.hair_colors = [
+            (80, 60, 40),     # Brown
+            (240, 220, 100),  # Blonde
+            (40, 40, 40),     # Black
+            (200, 100, 50),   # Ginger
+            (180, 180, 200),  # Silver
+            (100, 50, 150),   # Purple
+        ]
         
-    elif race == "dwarf":
-        # Stocky, round head with beard
-        for i in range(7, 13):
-            for j in range(5, 11):
-                draw_rect(surface, skin_col, x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Beard
-        for i in range(7, 13):
-            for j in range(10, 14):
-                draw_rect(surface, (100, 60, 30), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-                
-    elif race == "goblin":
-        # Small, pointy head
-        for i in range(7, 13):
-            for j in range(5, 12):
-                draw_rect(surface, skin_col, x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Large ears
-        draw_rect(surface, skin_col, x_center - 72, y_center + 8, PIXEL * 2, PIXEL * 3)
-        draw_rect(surface, skin_col, x_center + 64, y_center + 8, PIXEL * 2, PIXEL * 3)
-    
-    # Draw eyes (all races)
-    draw_rect(surface, (255, 255, 255), x_center - 32, y_center + 8, PIXEL * 3, PIXEL * 2)
-    draw_rect(surface, (255, 255, 255), x_center + 16, y_center + 8, PIXEL * 3, PIXEL * 2)
-    draw_rect(surface, (0, 0, 0), x_center - 24, y_center + 8, PIXEL, PIXEL)
-    draw_rect(surface, (0, 0, 0), x_center + 24, y_center + 8, PIXEL, PIXEL)
-
-
-def draw_expression(surface, expression):
-    """Draw facial expression"""
-    x_center = 256
-    y_center = 224
-    
-    if expression == "handsome":
-        # Confident smile with raised eyebrows
-        draw_rect(surface, (0, 0, 0), x_center - 16, y_center + 32, PIXEL * 4, PIXEL)
-        draw_rect(surface, (0, 0, 0), x_center - 24, y_center + 24, PIXEL, PIXEL)
-        draw_rect(surface, (0, 0, 0), x_center + 16, y_center + 24, PIXEL, PIXEL)
-        # Raised eyebrows
-        draw_rect(surface, (0, 0, 0), x_center - 40, y_center - 4, PIXEL * 3, PIXEL)
-        draw_rect(surface, (0, 0, 0), x_center + 24, y_center - 4, PIXEL * 3, PIXEL)
+        self.cloth_colors = [
+            (100, 150, 200),  # Blue
+            (200, 50, 50),    # Red
+            (100, 200, 100),  # Green
+            (150, 100, 180),  # Purple
+            (200, 200, 100),  # Yellow
+            (100, 100, 100),  # Gray
+        ]
         
-    elif expression == "serious":
-        # Straight mouth with stern eyebrows
-        draw_rect(surface, (0, 0, 0), x_center - 16, y_center + 32, PIXEL * 4, PIXEL)
-        # Furrowed eyebrows
-        draw_rect(surface, (0, 0, 0), x_center - 40, y_center, PIXEL * 3, PIXEL)
-        draw_rect(surface, (0, 0, 0), x_center + 24, y_center, PIXEL * 3, PIXEL)
-        
-    elif expression == "cute":
-        # Round mouth
-        draw_rect(surface, (255, 150, 150), x_center - 8, y_center + 28, PIXEL * 2, PIXEL * 2)
-        # Blush
-        draw_rect(surface, (255, 180, 180), x_center - 48, y_center + 24, PIXEL * 2, PIXEL)
-        draw_rect(surface, (255, 180, 180), x_center + 40, y_center + 24, PIXEL * 2, PIXEL)
-        
-    elif expression == "goofy":
-        # Tongue out with one eye closed
-        draw_rect(surface, (255, 100, 120), x_center - 8, y_center + 32, PIXEL * 2, PIXEL * 2)
-        # One eye wink
-        draw_rect(surface, (0, 0, 0), x_center - 32, y_center + 8, PIXEL * 3, PIXEL)
-        # Silly raised eyebrow on other side
-        draw_rect(surface, (0, 0, 0), x_center + 24, y_center - 4, PIXEL * 3, PIXEL)
-
-
-def draw_headwear(surface, headwear_type, race):
-    """Draw headwear"""
-    x_center = 256
-    y_center = 224
+        self.backgrounds = [
+            ("solid", (180, 160, 200)),
+            ("solid", (160, 180, 210)),
+            ("solid", (240, 200, 220)),
+            ("solid", (200, 220, 200)),
+            ("gradient", ((255, 180, 100), (150, 100, 180))),
+            ("gradient", ((200, 220, 255), (60, 100, 180))),
+        ]
     
-    if headwear_type == "headband":
-        # Simple headband
-        for i in range(7, 13):
-            draw_rect(surface, (200, 150, 100), x_center - 80 + i * PIXEL, y_center - 16)
-        # Small decoration
-        draw_rect(surface, (255, 200, 100), x_center - 4, y_center - 16)
+    def draw_pixel(self, surface, color, gx, gy, w=1, h=1):
+        """Draw a pixel at grid coordinates"""
+        pygame.draw.rect(surface, color, 
+                        (gx * PIXEL_SIZE, gy * PIXEL_SIZE, 
+                         w * PIXEL_SIZE, h * PIXEL_SIZE))
     
-    elif headwear_type == "horn_helmet":
-        # Metal helmet
-        for i in range(7, 13):
-            for j in range(3, 6):
-                draw_rect(surface, (150, 150, 150), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Horns
-        draw_rect(surface, (240, 240, 220), x_center - 64, y_center - 40, PIXEL * 2, PIXEL * 4)
-        draw_rect(surface, (240, 240, 220), x_center + 56, y_center - 40, PIXEL * 2, PIXEL * 4)
-        draw_rect(surface, (240, 240, 220), x_center - 72, y_center - 56, PIXEL * 2, PIXEL * 2)
-        draw_rect(surface, (240, 240, 220), x_center + 64, y_center - 56, PIXEL * 2, PIXEL * 2)
+    def draw_background(self, surface, bg_type):
+        """Draw background"""
+        bg_style, bg_data = bg_type
         
-    elif headwear_type == "flower_crown":
-        # Flowers
-        draw_rect(surface, (255, 100, 150), x_center - 48, y_center - 32, PIXEL * 2, PIXEL * 2)
-        draw_rect(surface, (255, 200, 100), x_center - 16, y_center - 40, PIXEL * 2, PIXEL * 2)
-        draw_rect(surface, (150, 100, 255), x_center + 24, y_center - 32, PIXEL * 2, PIXEL * 2)
-        # Leaves
-        for i in range(7, 13):
-            draw_rect(surface, (100, 200, 100), x_center - 80 + i * PIXEL, y_center - 24)
-            
-    elif headwear_type == "wizard_hat":
-        # Tall pointed hat
-        # Brim
-        for i in range(6, 14):
-            draw_rect(surface, (50, 50, 120), x_center - 80 + i * PIXEL, y_center - 24)
-        # Cone
-        for i in range(8, 12):
-            for j in range(5, 12):
-                if j < 9 - abs(i - 10):
-                    draw_rect(surface, (50, 50, 120), x_center - 80 + i * PIXEL, y_center - 40 - j * PIXEL)
-        # Star decoration
-        draw_rect(surface, (255, 255, 100), x_center - 8, y_center - 64)
+        if bg_style == "solid":
+            surface.fill(bg_data)
+        elif bg_style == "gradient":
+            top_color, bottom_color = bg_data
+            for y in range(GRID_HEIGHT):
+                t = y / GRID_HEIGHT
+                r = int(top_color[0] * (1 - t) + bottom_color[0] * t)
+                g = int(top_color[1] * (1 - t) + bottom_color[1] * t)
+                b = int(top_color[2] * (1 - t) + bottom_color[2] * t)
+                for x in range(GRID_WIDTH):
+                    self.draw_pixel(surface, (r, g, b), x, y)
+    
+    def draw_body(self, surface, cloth_color):
+        """Draw body/torso"""
+        # Shoulders (wide rectangle)
+        for y in range(4):
+            for x in range(-10, 11):
+                self.draw_pixel(surface, cloth_color, CENTER_X + x, BODY_Y + y)
         
-    elif headwear_type == "tentacle_hat":
-        # Octopus-like hat
-        # Main body
-        for i in range(7, 13):
-            for j in range(3, 6):
-                draw_rect(surface, (200, 100, 200), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Tentacles
-        draw_rect(surface, (200, 100, 200), x_center - 56, y_center - 16, PIXEL, PIXEL * 3)
-        draw_rect(surface, (200, 100, 200), x_center - 32, y_center - 24, PIXEL, PIXEL * 3)
-        draw_rect(surface, (200, 100, 200), x_center + 24, y_center - 24, PIXEL, PIXEL * 3)
-        draw_rect(surface, (200, 100, 200), x_center + 48, y_center - 16, PIXEL, PIXEL * 3)
-
-
-def draw_necklace(surface, necklace_type):
-    """Draw necklace"""
-    x_center = 256
-    y_center = 224
-    
-    if necklace_type == "rune_pendant":
-        # Chain
-        for i in range(8, 12):
-            draw_rect(surface, (150, 150, 170), x_center - 80 + i * PIXEL, y_center + 64)
-        # Glowing rune
-        draw_rect(surface, (100, 200, 255), x_center - 16, y_center + 72, PIXEL * 4, PIXEL * 3)
-        draw_rect(surface, (200, 230, 255), x_center - 8, y_center + 76)
-    
-    elif necklace_type == "skull_pendant":
-        # Chain
-        for i in range(8, 12):
-            draw_rect(surface, (200, 200, 200), x_center - 80 + i * PIXEL, y_center + 64)
-        # Skull
-        draw_rect(surface, (240, 240, 230), x_center - 16, y_center + 72, PIXEL * 4, PIXEL * 3)
-        draw_rect(surface, (0, 0, 0), x_center - 8, y_center + 72)
-        draw_rect(surface, (0, 0, 0), x_center + 8, y_center + 72)
+        # Torso (narrower, extends down)
+        for y in range(4, 20):
+            width = 8
+            for x in range(-width, width + 1):
+                self.draw_pixel(surface, cloth_color, CENTER_X + x, BODY_Y + y)
         
-    elif necklace_type == "gem_collar":
-        # Gold collar
-        for i in range(7, 13):
-            draw_rect(surface, (255, 215, 0), x_center - 80 + i * PIXEL, y_center + 64)
-        # Gems
-        draw_rect(surface, (255, 50, 50), x_center - 32, y_center + 64)
-        draw_rect(surface, (50, 50, 255), x_center, y_center + 64)
-        draw_rect(surface, (50, 255, 50), x_center + 24, y_center + 64)
-        
-    elif necklace_type == "leaf_necklace":
-        # Vine
-        for i in range(8, 12):
-            draw_rect(surface, (100, 150, 80), x_center - 80 + i * PIXEL, y_center + 64)
-        # Leaves
-        draw_rect(surface, (120, 200, 100), x_center - 24, y_center + 72, PIXEL * 2, PIXEL * 2)
-        draw_rect(surface, (120, 200, 100), x_center + 8, y_center + 72, PIXEL * 2, PIXEL * 2)
-
-
-def draw_earrings(surface, earring_type):
-    """Draw earrings"""
-    x_center = 256
-    y_center = 224
-    
-    if earring_type == "stud":
-        # Small stud earrings
-        draw_rect(surface, (255, 215, 0), x_center - 64, y_center + 16)
-        draw_rect(surface, (255, 215, 0), x_center + 56, y_center + 16)
-        # Shine effect
-        draw_rect(surface, (255, 255, 200), x_center - 64, y_center + 16, PIXEL // 2, PIXEL // 2)
-        draw_rect(surface, (255, 255, 200), x_center + 56, y_center + 16, PIXEL // 2, PIXEL // 2)
-    
-    elif earring_type == "hoop":
-        # Gold hoops
-        draw_rect(surface, (255, 215, 0), x_center - 64, y_center + 16, PIXEL, PIXEL * 3)
-        draw_rect(surface, (255, 215, 0), x_center + 56, y_center + 16, PIXEL, PIXEL * 3)
-        draw_rect(surface, (255, 215, 0), x_center - 72, y_center + 24)
-        draw_rect(surface, (255, 215, 0), x_center + 64, y_center + 24)
-        
-    elif earring_type == "feather":
-        # Feather earrings
-        draw_rect(surface, (100, 200, 200), x_center - 64, y_center + 16, PIXEL, PIXEL * 4)
-        draw_rect(surface, (100, 200, 200), x_center + 56, y_center + 16, PIXEL, PIXEL * 4)
-        draw_rect(surface, (100, 200, 200), x_center - 72, y_center + 24, PIXEL, PIXEL * 2)
-        draw_rect(surface, (100, 200, 200), x_center + 64, y_center + 24, PIXEL, PIXEL * 2)
-        
-    elif earring_type == "bone":
-        # Bone earrings
-        draw_rect(surface, (240, 240, 220), x_center - 64, y_center + 16, PIXEL * 2, PIXEL * 3)
-        draw_rect(surface, (240, 240, 220), x_center + 56, y_center + 16, PIXEL * 2, PIXEL * 3)
-
-
-def draw_clothes(surface, clothes_type, skin_col):
-    """Draw clothing/armor"""
-    x_center = 256
-    y_center = 224
-    
-    if clothes_type == "hoodie":
-        # Modern hoodie
-        for i in range(6, 14):
-            for j in range(13, 20):
-                draw_rect(surface, (80, 80, 100), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Hood
-        for i in range(7, 13):
-            for j in range(3, 5):
-                draw_rect(surface, (80, 80, 100), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Drawstrings
-        draw_rect(surface, (200, 200, 200), x_center - 16, y_center + 28, PIXEL, PIXEL * 2)
-        draw_rect(surface, (200, 200, 200), x_center + 8, y_center + 28, PIXEL, PIXEL * 2)
-    
-    elif clothes_type == "robe":
-        # Flowing robe
-        for i in range(6, 14):
-            for j in range(13, 20):
-                draw_rect(surface, (80, 60, 140), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Belt
-        for i in range(7, 13):
-            draw_rect(surface, (150, 100, 50), x_center - 80 + i * PIXEL, y_center + 48)
-            
-    elif clothes_type == "armor":
-        # Plate armor
-        for i in range(7, 13):
-            for j in range(13, 19):
-                draw_rect(surface, (180, 180, 200), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Armor details
-        for i in range(8, 12):
-            draw_rect(surface, (120, 120, 140), x_center - 80 + i * PIXEL, y_center + 40)
-            
-    elif clothes_type == "tunic":
-        # Simple tunic
-        for i in range(7, 13):
-            for j in range(13, 19):
-                draw_rect(surface, (150, 100, 60), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
+        # Add simple details (darker shade for outline)
+        dark_cloth = tuple(max(0, c - 40) for c in cloth_color)
         # Collar
-        for i in range(8, 12):
-            draw_rect(surface, skin_col, x_center - 80 + i * PIXEL, y_center + 24)
+        for x in range(-6, 7):
+            self.draw_pixel(surface, dark_cloth, CENTER_X + x, BODY_Y)
+    
+    def draw_neck(self, surface, skin_color):
+        """Draw neck connecting head to body"""
+        for y in range(4):
+            for x in range(-3, 4):
+                self.draw_pixel(surface, skin_color, CENTER_X + x, NECK_Y + y)
+    
+    def draw_head(self, surface, skin_color):
+        """Draw head (oval shape)"""
+        # Main head shape (centered)
+        for y in range(12):
+            if y < 3 or y > 8:
+                width = 6  # Narrower at top and bottom
+            else:
+                width = 8  # Wider in middle
             
-    elif clothes_type == "cloak":
-        # Mysterious cloak
-        # Shoulders
-        for i in range(6, 14):
-            for j in range(12, 20):
-                if i < 8 or i > 11:
-                    draw_rect(surface, (40, 40, 60), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Center
-        for i in range(8, 12):
-            for j in range(13, 19):
-                draw_rect(surface, (40, 40, 60), x_center - 80 + i * PIXEL, y_center - 40 + j * PIXEL)
-        # Clasp
-        draw_rect(surface, (255, 215, 0), x_center - 8, y_center + 24, PIXEL * 2, PIXEL)
+            for x in range(-width, width + 1):
+                self.draw_pixel(surface, skin_color, CENTER_X + x, HEAD_Y + y)
+        
+        # Ears
+        self.draw_pixel(surface, skin_color, CENTER_X - 9, HEAD_Y + 5, 2, 3)
+        self.draw_pixel(surface, skin_color, CENTER_X + 8, HEAD_Y + 5, 2, 3)
+    
+    def draw_face(self, surface):
+        """Draw facial features"""
+        # Eyes (white)
+        self.draw_pixel(surface, (255, 255, 255), CENTER_X - 4, HEAD_Y + 5, 3, 2)
+        self.draw_pixel(surface, (255, 255, 255), CENTER_X + 2, HEAD_Y + 5, 3, 2)
+        
+        # Pupils (black)
+        pupil_offset = random.choice([-1, 0, 1])  # Random gaze direction
+        self.draw_pixel(surface, (0, 0, 0), CENTER_X - 3 + pupil_offset, HEAD_Y + 5)
+        self.draw_pixel(surface, (0, 0, 0), CENTER_X + 3 + pupil_offset, HEAD_Y + 5)
+        
+        # Mouth (random expression)
+        mouth_type = random.choice(["smile", "neutral", "cute"])
+        
+        if mouth_type == "smile":
+            # Curved smile
+            for x in range(-2, 3):
+                self.draw_pixel(surface, (0, 0, 0), CENTER_X + x, HEAD_Y + 9)
+            self.draw_pixel(surface, (0, 0, 0), CENTER_X - 3, HEAD_Y + 8)
+            self.draw_pixel(surface, (0, 0, 0), CENTER_X + 3, HEAD_Y + 8)
+        elif mouth_type == "neutral":
+            # Straight line
+            for x in range(-2, 3):
+                self.draw_pixel(surface, (0, 0, 0), CENTER_X + x, HEAD_Y + 9)
+        else:  # cute
+            # Small round mouth
+            self.draw_pixel(surface, (255, 150, 150), CENTER_X, HEAD_Y + 9, 2, 2)
+            # Blush
+            self.draw_pixel(surface, (255, 180, 180), CENTER_X - 6, HEAD_Y + 7, 2, 1)
+            self.draw_pixel(surface, (255, 180, 180), CENTER_X + 5, HEAD_Y + 7, 2, 1)
+    
+    def draw_hair(self, surface, hair_color):
+        """Draw hair"""
+        hair_style = random.choice(["short", "long", "spiky", "bald"])
+        
+        if hair_style == "bald":
+            return
+        
+        if hair_style == "short":
+            # Cover top and sides of head
+            for y in range(5):
+                width = 8 if y > 2 else 6
+                for x in range(-width, width + 1):
+                    self.draw_pixel(surface, hair_color, CENTER_X + x, HEAD_Y + y)
+        
+        elif hair_style == "long":
+            # Top of head
+            for y in range(5):
+                width = 8 if y > 2 else 6
+                for x in range(-width, width + 1):
+                    self.draw_pixel(surface, hair_color, CENTER_X + x, HEAD_Y + y)
+            # Long sides
+            for y in range(5, 12):
+                self.draw_pixel(surface, hair_color, CENTER_X - 8, HEAD_Y + y, 2, 1)
+                self.draw_pixel(surface, hair_color, CENTER_X + 7, HEAD_Y + y, 2, 1)
+        
+        else:  # spiky
+            # Base
+            for y in range(5):
+                width = 8 if y > 2 else 6
+                for x in range(-width, width + 1):
+                    self.draw_pixel(surface, hair_color, CENTER_X + x, HEAD_Y + y)
+            # Spikes
+            for spike_x in [-6, -2, 2, 6]:
+                for spike_y in range(3):
+                    self.draw_pixel(surface, hair_color, CENTER_X + spike_x, HEAD_Y - spike_y)
+    
+    def draw_hat(self, surface):
+        """Draw hat/headwear"""
+        hat_type = random.choice(["none", "none", "wizard", "crown", "helmet", "hood"])
+        
+        if hat_type == "none":
+            return
+        
+        if hat_type == "wizard":
+            # Wizard hat (tall cone)
+            hat_color = random.choice([(50, 50, 120), (120, 50, 120), (50, 120, 50)])
+            # Brim
+            for x in range(-10, 11):
+                self.draw_pixel(surface, hat_color, CENTER_X + x, HEAD_Y)
+            # Cone
+            for h in range(8):
+                width = 6 - h // 2
+                for x in range(-width, width + 1):
+                    self.draw_pixel(surface, hat_color, CENTER_X + x, HEAD_Y - h)
+            # Star
+            self.draw_pixel(surface, (255, 255, 100), CENTER_X, HEAD_Y - 8)
+        
+        elif hat_type == "crown":
+            # Crown
+            gold = (255, 215, 0)
+            for x in range(-6, 7):
+                self.draw_pixel(surface, gold, CENTER_X + x, HEAD_Y)
+            # Points
+            for x in [-5, 0, 5]:
+                self.draw_pixel(surface, gold, CENTER_X + x, HEAD_Y - 1, 1, 2)
+            # Gems
+            self.draw_pixel(surface, (255, 50, 50), CENTER_X - 5, HEAD_Y - 2)
+            self.draw_pixel(surface, (50, 255, 50), CENTER_X, HEAD_Y - 2)
+            self.draw_pixel(surface, (50, 50, 255), CENTER_X + 5, HEAD_Y - 2)
+        
+        elif hat_type == "helmet":
+            # Knight helmet
+            gray = (150, 150, 150)
+            for y in range(4):
+                width = 8 if y > 1 else 7
+                for x in range(-width, width + 1):
+                    self.draw_pixel(surface, gray, CENTER_X + x, HEAD_Y + y)
+            # Horns
+            self.draw_pixel(surface, (200, 200, 180), CENTER_X - 9, HEAD_Y, 2, 3)
+            self.draw_pixel(surface, (200, 200, 180), CENTER_X + 8, HEAD_Y, 2, 3)
+        
+        else:  # hood
+            # Hood
+            hood_color = random.choice([(100, 80, 60), (60, 80, 60), (60, 60, 80)])
+            for y in range(6):
+                width = 10 if y > 2 else 8
+                for x in range(-width, width + 1):
+                    self.draw_pixel(surface, hood_color, CENTER_X + x, HEAD_Y + y)
+    
+    def draw_accessory(self, surface):
+        """Draw necklace or accessory"""
+        acc_type = random.choice(["none", "none", "pendant", "collar", "scarf"])
+        
+        if acc_type == "none":
+            return
+        
+        if acc_type == "pendant":
+            # Chain
+            for x in range(-2, 3):
+                self.draw_pixel(surface, (150, 150, 170), CENTER_X + x, NECK_Y + 3)
+            # Pendant
+            pendant_color = random.choice([(100, 200, 255), (255, 50, 50), (100, 255, 100)])
+            self.draw_pixel(surface, pendant_color, CENTER_X - 1, NECK_Y + 4, 2, 2)
+        
+        elif acc_type == "collar":
+            # Gold collar
+            for x in range(-6, 7):
+                self.draw_pixel(surface, (255, 215, 0), CENTER_X + x, NECK_Y + 3)
+        
+        else:  # scarf
+            # Scarf
+            scarf_color = random.choice([(200, 50, 50), (50, 200, 50), (200, 200, 50)])
+            for x in range(-6, 7):
+                self.draw_pixel(surface, scarf_color, CENTER_X + x, NECK_Y + 3)
+            # Hanging ends
+            self.draw_pixel(surface, scarf_color, CENTER_X - 7, NECK_Y + 4, 1, 4)
+            self.draw_pixel(surface, scarf_color, CENTER_X + 7, NECK_Y + 4, 1, 4)
+    
+    def generate(self, surface):
+        """Generate a complete random avatar"""
+        # Random colors
+        skin_color = random.choice(self.skin_colors)
+        hair_color = random.choice(self.hair_colors)
+        cloth_color = random.choice(self.cloth_colors)
+        bg_type = random.choice(self.backgrounds)
+        
+        # Draw in correct layer order
+        self.draw_background(surface, bg_type)
+        self.draw_body(surface, cloth_color)
+        self.draw_neck(surface, skin_color)
+        self.draw_head(surface, skin_color)
+        self.draw_face(surface)
+        self.draw_hair(surface, hair_color)
+        self.draw_hat(surface)
+        self.draw_accessory(surface)
 
 
-def generate_avatar(surface):
-    """Generate random avatar components and draw"""
-    global current_avatar
+def save_avatar(surface):
+    """Save the current avatar to file"""
+    output_dir = Path("output")
+    output_dir.mkdir(exist_ok=True)
     
-    # Randomly select components
-    current_avatar = {
-        "gender": random_choice(GENDERS),
-        "race": random_choice(RACES),
-        "skin_color": random_choice(SKIN_COLORS),
-        "expression": random_choice(EXPRESSIONS),
-        "headwear": random_choice(HEADWEAR),
-        "necklace": random_choice(NECKLACES),
-        "earring": random_choice(EARRINGS),
-        "clothes": random_choice(CLOTHES),
-        "background": random_choice(BACKGROUNDS)
-    }
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = output_dir / f"avatar_{timestamp}.png"
     
-    # Draw background first
-    draw_background(surface, current_avatar["background"])
-    
-    # Draw avatar components in order (back to front)
-    draw_clothes(surface, current_avatar["clothes"], current_avatar["skin_color"])
-    draw_head(surface, current_avatar["race"], current_avatar["skin_color"])
-    draw_expression(surface, current_avatar["expression"])
-    draw_earrings(surface, current_avatar["earring"])
-    draw_necklace(surface, current_avatar["necklace"])
-    draw_headwear(surface, current_avatar["headwear"], current_avatar["race"])
+    pygame.image.save(surface, str(filename))
+    print(f"✅ Avatar saved: {filename}")
+    return filename
 
 
 def main():
     """Main game loop"""
-    global random_seed
-    
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Fantasy Pixel Avatar Generator')
-    parser.add_argument('--seed', type=int, help='Random seed for reproducible generation')
-    args = parser.parse_args()
-    
-    # Set random seed if provided
-    if args.seed is not None:
-        random_seed = args.seed
-        random.seed(random_seed)
-        print(f"Using random seed: {random_seed}")
-    
-    # Initialize pygame
     pygame.init()
+    
+    # Create window
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('Fantasy Pixel Avatar Generator - Press R or Click to generate')
-    clock = pygame.time.Clock()
+    pygame.display.set_caption("Fantasy Avatar Generator")
+    
+    # Create generator
+    generator = AvatarGenerator()
     
     # Generate initial avatar
-    generate_avatar(screen)
+    avatar_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    generator.generate(avatar_surface)
+    
+    # Font for instructions
+    pygame.font.init()
+    font = pygame.font.Font(None, 24)
     
     # Main loop
     running = True
+    show_instructions = True
+    instruction_timer = pygame.time.get_ticks()
+    
+    print("🎨 Fantasy Avatar Generator")
+    print("Controls:")
+    print("  - Click or press R: Generate new avatar")
+    print("  - Press S: Save avatar")
+    print("  - Press ESC: Quit")
+    
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                generate_avatar(screen)
+                # Generate new avatar on click
+                generator.generate(avatar_surface)
+                print("🎲 New avatar generated!")
+            
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    generate_avatar(screen)
+                    # Generate new avatar on R key
+                    generator.generate(avatar_surface)
+                    print("🎲 New avatar generated!")
+                
                 elif event.key == pygame.K_s:
-                    # Save screenshot
-                    timestamp = pygame.time.get_ticks()
-                    filename = f"avatar_{timestamp}.png"
-                    pygame.image.save(screen, filename)
-                    print(f"Saved avatar to {filename}")
+                    # Save avatar on S key
+                    save_avatar(avatar_surface)
+                
                 elif event.key == pygame.K_ESCAPE:
                     running = False
         
+        # Draw avatar
+        screen.blit(avatar_surface, (0, 0))
+        
+        # Show instructions for first 5 seconds
+        if show_instructions:
+            elapsed = pygame.time.get_ticks() - instruction_timer
+            if elapsed < 5000:
+                # Semi-transparent overlay
+                overlay = pygame.Surface((SCREEN_WIDTH, 80))
+                overlay.set_alpha(200)
+                overlay.fill((0, 0, 0))
+                screen.blit(overlay, (0, SCREEN_HEIGHT - 80))
+                
+                # Instructions text
+                text1 = font.render("Click or press R to generate new avatar", True, (255, 255, 255))
+                text2 = font.render("Press S to save | ESC to quit", True, (255, 255, 255))
+                screen.blit(text1, (20, SCREEN_HEIGHT - 70))
+                screen.blit(text2, (20, SCREEN_HEIGHT - 45))
+            else:
+                show_instructions = False
+        
         pygame.display.flip()
-        clock.tick(60)
     
     pygame.quit()
-    sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
